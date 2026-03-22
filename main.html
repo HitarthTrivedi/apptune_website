@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AppTune — Music automation for macOS</title>
+<link rel="icon" type="image/png" href="apptune_logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0a0a0a;
+    --white: #fafafa;
+    --gray-1: #f4f4f2;
+    --gray-2: #e8e8e4;
+    --gray-3: #b0afa8;
+    --gray-4: #6e6d67;
+    --gray-5: #2c2c2a;
+    --purple: #6c63ff;
+    --purple-light: #eeedfe;
+    --purple-dark: #3c3489;
+    --green: #1db954;
+    --red: #fc3c44;
+    --font-display: 'DM Serif Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--white);
+    color: var(--black);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection { background: var(--purple); color: white; }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px;
+    height: 60px;
+    background: rgba(250,250,250,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--gray-2);
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--black);
+  }
+
+  .nav-logo-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--black);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-logo-icon svg { width: 16px; height: 16px; }
+
+  .nav-logo-text {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 13px;
+    color: var(--gray-4);
+    text-decoration: none;
+    transition: color 0.2s;
+    letter-spacing: 0.01em;
+  }
+
+  .nav-links a:hover { color: var(--black); }
+
+  .nav-cta {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--white) !important;
+    background: var(--black);
+    padding: 8px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+
+  .nav-cta:hover { opacity: 0.8; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 120px 48px 80px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(108,99,255,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 80% 60%, rgba(29,185,84,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 20% 80%, rgba(252,60,68,0.03) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--gray-1);
+    border: 1px solid var(--gray-2);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-4);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(52px, 7vw, 96px);
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    color: var(--black);
+    max-width: 900px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s ease 0.1s both;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--purple);
+  }
+
+  .hero-subtitle {
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--gray-4);
+    max-width: 480px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+    animation: fadeUp 0.6s ease 0.2s both;
+  }
+
+  .hero-install {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    animation: fadeUp 0.6s ease 0.3s both;
+  }
+
+  .install-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gray-3);
+    font-weight: 500;
+  }
+
+  .terminal-block {
+    background: var(--black);
+    border-radius: 12px;
+    padding: 20px 28px;
+    font-family: var(--font-mono);
+    text-align: left;
+    min-width: 480px;
+    border: 1px solid var(--gray-5);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .terminal-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(108,99,255,0.5), transparent);
+  }
+
+  .terminal-dots {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .terminal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .terminal-dot.red { background: #ff5f57; }
+  .terminal-dot.yellow { background: #ffbd2e; }
+  .terminal-dot.green { background: #28c840; }
+
+  .terminal-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .terminal-line:last-child { margin-bottom: 0; }
+
+  .terminal-prompt {
+    color: var(--purple);
+    font-size: 13px;
+    font-weight: 500;
+    user-select: none;
+  }
+
+  .terminal-cmd {
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .terminal-cmd:hover { color: var(--purple); }
+
+  .terminal-comment {
+    color: var(--gray-4);
+    font-size: 12px;
+    margin-bottom: 12px;
+    padding-left: 20px;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    color: var(--gray-3);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+
+  .hero-meta {
+    font-size: 12px;
+    color: var(--gray-3);
+  }
+
+  .hero-meta span { color: var(--gray-4); }
+
+  /* MARQUEE */
+  .marquee-section {
+    padding: 32px 0;
+    border-top: 1px solid var(--gray-2);
+    border-bottom: 1px solid var(--gray-2);
+    overflow: hidden;
+    background: var(--gray-1);
+  }
+
+  .marquee-track {
+    display: flex;
+    gap: 48px;
+    animation: marquee 20s linear infinite;
+    width: max-content;
+  }
+
+  .marquee-item {
+    font-size: 13px;
+    color: var(--gray-3);
+    font-weight: 400;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: 0.02em;
+  }
+
+  .marquee-item::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--gray-3);
+  }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* HOW IT WORKS */
+  .section {
+    padding: 120px 48px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--gray-3);
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 4vw, 56px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--black);
+    max-width: 600px;
+    margin-bottom: 64px;
+  }
+
+  .section-title em { font-style: italic; color: var(--purple); }
+
+  /* STEPS */
+  .steps {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--gray-2);
+    border: 1px solid var(--gray-2);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .step {
+    background: var(--white);
+    padding: 40px 36px;
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .step:hover { background: var(--gray-1); }
+
+  .step-number {
+    font-family: var(--font-display);
+    font-size: 64px;
+    line-height: 1;
+    color: var(--gray-2);
+    margin-bottom: 24px;
+    letter-spacing: -0.04em;
+  }
+
+  .step-title {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--black);
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .step-desc {
+    font-size: 14px;
+    color: var(--gray-4);
+    line-height: 1.6;
+  }
+
+  .step-tag {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.02em;
+  }
+
+  .tag-purple { background: var(--purple-light); color: var(--purple-dark); }
+  .tag-green { background: #e8f7ee; color: #0a6630; }
+  .tag-red { background: #fff0f1; color: #9b1c22; }
+
+  /* FEATURES */
+  .features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .feature-card {
+    background: var(--gray-1);
+    border: 1px solid var(--gray-2);
+    border-radius: 16px;
+    padding: 32px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .feature-card:hover {
+    border-color: var(--gray-3);
+    transform: translateY(-2px);
+  }
+
+  .feature-card.large {
+    grid-column: span 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .feature-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    font-size: 18px;
+  }
+
+  .icon-purple { background: var(--purple-light); }
+  .icon-green { background: #e8f7ee; }
+  .icon-red { background: #fff0f1; }
+  .icon-gray { background: var(--gray-2); }
+
+  .feature-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--black);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .feature-desc {
+    font-size: 14px;
+    color: var(--gray-4);
+    line-height: 1.6;
+  }
+
+  /* TERMINAL SHOWCASE */
+  .terminal-showcase {
+    background: var(--black);
+    border-radius: 20px;
+    padding: 32px;
+    font-family: var(--font-mono);
+    border: 1px solid var(--gray-5);
+  }
+
+  .terminal-showcase .terminal-dots { margin-bottom: 24px; }
+
+  .showcase-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+
+  .showcase-prompt { color: var(--purple); min-width: 16px; }
+  .showcase-cmd { color: #e8e8e4; }
+  .showcase-output { color: var(--gray-4); padding-left: 28px; margin-bottom: 12px; font-size: 12px; }
+  .showcase-success { color: var(--green); }
+  .showcase-info { color: #378add; }
+
+  /* STATS */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--gray-2);
+    border: 1px solid var(--gray-2);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-top: 80px;
+  }
+
+  .stat-item {
+    background: var(--white);
+    padding: 40px;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-family: var(--font-display);
+    font-size: 48px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--black);
+    margin-bottom: 8px;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    color: var(--gray-4);
+  }
+
+  /* INSTALL SECTION */
+  .install-section {
+    background: var(--black);
+    padding: 120px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .install-section::before {
+    content: '';
+    position: absolute;
+    top: -100px; left: 50%; transform: translateX(-50%);
+    width: 600px;
+    height: 300px;
+    background: radial-gradient(ellipse, rgba(108,99,255,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .install-section .section-label { color: var(--gray-5); }
+
+  .install-title {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 4vw, 64px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    max-width: 700px;
+    margin: 0 auto 16px;
+  }
+
+  .install-title em { font-style: italic; color: var(--purple); }
+
+  .install-subtitle {
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--gray-4);
+    margin-bottom: 48px;
+  }
+
+  .install-terminal {
+    max-width: 560px;
+    margin: 0 auto 32px;
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 14px;
+    padding: 24px 28px;
+    text-align: left;
+    font-family: var(--font-mono);
+    position: relative;
+  }
+
+  .install-terminal::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(108,99,255,0.6), transparent);
+  }
+
+  .install-note {
+    font-size: 12px;
+    color: var(--gray-5);
+  }
+
+  .install-note a { color: var(--gray-4); }
+
+  /* FOOTER */
+  footer {
+    background: var(--black);
+    border-top: 1px solid #1a1a1a;
+    padding: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .footer-logo {
+    width: 24px;
+    height: 24px;
+    background: var(--gray-5);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .footer-name {
+    font-size: 14px;
+    color: var(--gray-4);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+  }
+
+  .footer-links a {
+    font-size: 13px;
+    color: var(--gray-5);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--gray-3); }
+
+  .footer-right {
+    font-size: 12px;
+    color: var(--gray-5);
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* CURSOR */
+  .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 14px;
+    background: var(--purple);
+    animation: blink 1s step-end infinite;
+    vertical-align: middle;
+    margin-left: 2px;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* macOS badge */
+  .macos-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 100px;
+    padding: 8px 20px;
+    font-size: 13px;
+    color: var(--gray-3);
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease 0.05s both;
+  }
+
+  .macos-logo {
+    width: 16px;
+    height: 16px;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon" style="background: none; width: 32px; height: 32px;">
+  <img src="apptune_logo.png" style="width: 32px; height: 32px; border-radius: 7px;" alt="AppTune">
+</div>
+    <span class="nav-logo-text">AppTune</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#how-it-works">How it works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="https://github.com/HitarthTrivedi/AppTune" target="_blank">GitHub</a></li>
+    <li><a href="#install" class="nav-cta">Install free</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    Open source · macOS 13+
+  </div>
+  <h1 class="hero-title">Your workflow<br>deserves the <em>right</em> soundtrack</h1>
+  <p class="hero-subtitle">AppTune plays your music automatically when you open apps. Open Xcode, hear focus music. Open Spotify, done.</p>
+
+  <div class="hero-install">
+    <span class="install-label">Install with Homebrew</span>
+    <div class="terminal-block">
+      <button class="copy-btn" onclick="copyInstall()">copy</button>
+      <div class="terminal-dots">
+        <div class="terminal-dot red"></div>
+        <div class="terminal-dot yellow"></div>
+        <div class="terminal-dot green"></div>
+      </div>
+      <div class="terminal-comment"># tap the repository</div>
+      <div class="terminal-line">
+        <span class="terminal-prompt">$</span>
+        <span class="terminal-cmd">brew tap HitarthTrivedi/apptune</span>
+      </div>
+      <div class="terminal-comment"># install AppTune</div>
+      <div class="terminal-line">
+        <span class="terminal-prompt">$</span>
+        <span class="terminal-cmd">brew install --cask apptune<span class="cursor"></span></span>
+      </div>
+    </div>
+    <p class="hero-meta">Free forever · <span>No account required</span> · macOS Ventura+</p>
+  </div>
+</section>
+
+<div class="marquee-section">
+  <div class="marquee-track" id="marquee">
+    <span class="marquee-item">Apple Music</span>
+    <span class="marquee-item">Spotify</span>
+    <span class="marquee-item">App-triggered playback</span>
+    <span class="marquee-item">Menu bar app</span>
+    <span class="marquee-item">Login item</span>
+    <span class="marquee-item">SwiftUI</span>
+    <span class="marquee-item">OAuth 2.0</span>
+    <span class="marquee-item">Keychain storage</span>
+    <span class="marquee-item">NSWorkspace</span>
+    <span class="marquee-item">SMAppService</span>
+    <span class="marquee-item">Open source</span>
+    <span class="marquee-item">macOS native</span>
+    <span class="marquee-item">Apple Music</span>
+    <span class="marquee-item">Spotify</span>
+    <span class="marquee-item">App-triggered playback</span>
+    <span class="marquee-item">Menu bar app</span>
+    <span class="marquee-item">Login item</span>
+    <span class="marquee-item">SwiftUI</span>
+    <span class="marquee-item">OAuth 2.0</span>
+    <span class="marquee-item">Keychain storage</span>
+    <span class="marquee-item">NSWorkspace</span>
+    <span class="marquee-item">SMAppService</span>
+    <span class="marquee-item">Open source</span>
+    <span class="marquee-item">macOS native</span>
+  </div>
+</div>
+
+<section class="section" id="how-it-works">
+  <p class="section-label reveal">How it works</p>
+  <h2 class="section-title reveal">Three steps.<br>Then <em>forget about it.</em></h2>
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step-number">01</div>
+      <div class="step-title">Install AppTune</div>
+      <div class="step-desc">One Homebrew command. AppTune lives in your menu bar and starts at login automatically.</div>
+      <span class="step-tag tag-purple">30 seconds</span>
+    </div>
+    <div class="step">
+      <div class="step-number">02</div>
+      <div class="step-title">Connect your music</div>
+      <div class="step-desc">Sign in to Spotify with OAuth or connect Apple Music. Your real playlists load instantly.</div>
+      <span class="step-tag tag-green">Apple Music + Spotify</span>
+    </div>
+    <div class="step">
+      <div class="step-number">03</div>
+      <div class="step-title">Set your rules</div>
+      <div class="step-desc">Choose which app triggers which playlist. Open Xcode → Deep Focus. Open Figma → Lo-fi. Done.</div>
+      <span class="step-tag tag-red">Fully automatic</span>
+    </div>
+  </div>
+
+  <div class="stats-row reveal">
+    <div class="stat-item">
+      <div class="stat-number">0</div>
+      <div class="stat-label">Background CPU usage</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">2</div>
+      <div class="stat-label">Music services supported</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">∞</div>
+      <div class="stat-label">Rules you can create</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="features" style="padding-top: 0;">
+  <p class="section-label reveal">Features</p>
+  <h2 class="section-title reveal">Built for macOS.<br><em>Feels native.</em></h2>
+
+  <div class="features-grid">
+    <div class="feature-card large reveal">
+      <div>
+        <div class="feature-icon icon-gray">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="2" y="2" width="7" height="7" rx="2" fill="#888"/>
+            <rect x="11" y="2" width="7" height="7" rx="2" fill="#888"/>
+            <rect x="2" y="11" width="7" height="7" rx="2" fill="#888"/>
+            <rect x="11" y="11" width="7" height="7" rx="2" fill="#6c63ff"/>
+          </svg>
+        </div>
+        <div class="feature-title">App-triggered playback</div>
+        <div class="feature-desc">AppTune watches every app launch and focus event system-wide using NSWorkspace. The moment you open an app that has a rule, your music starts — instantly, silently, automatically.</div>
+      </div>
+      <div class="terminal-showcase">
+        <div class="terminal-dots">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+        </div>
+        <div class="showcase-line"><span class="showcase-prompt">→</span><span class="showcase-cmd showcase-info">App launched: Xcode</span></div>
+        <div class="showcase-output">Matching rule found...</div>
+        <div class="showcase-line"><span class="showcase-prompt">→</span><span class="showcase-cmd showcase-success">Playing "Deep Focus" on Spotify</span></div>
+        <div class="showcase-line" style="margin-top: 16px;"><span class="showcase-prompt">→</span><span class="showcase-cmd showcase-info">App launched: Notion</span></div>
+        <div class="showcase-output">Matching rule found...</div>
+        <div class="showcase-line"><span class="showcase-prompt">→</span><span class="showcase-cmd showcase-success">Playing "Lo-fi Beats" on Apple Music</span></div>
+      </div>
+    </div>
+
+    <div class="feature-card reveal">
+      <div class="feature-icon icon-green">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <circle cx="7" cy="13" r="3" fill="#1db954"/>
+          <circle cx="13" cy="11" r="3" fill="#1db954"/>
+          <rect x="9.5" y="4" width="2" height="10" rx="1" fill="#1db954"/>
+          <rect x="14.5" y="2" width="2" height="10" rx="1" fill="#1db954"/>
+          <rect x="9.5" y="4" width="7" height="2" rx="1" fill="#1db954"/>
+        </svg>
+      </div>
+      <div class="feature-title">Spotify OAuth</div>
+      <div class="feature-desc">Sign in with your real Spotify account. AppTune fetches all your personal playlists via the Web API and stores your token securely in the macOS Keychain.</div>
+    </div>
+
+    <div class="feature-card reveal">
+      <div class="feature-icon icon-red">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 2C7.8 2 6 3.8 6 6c0 1.4.7 2.6 1.8 3.3C5.1 10.2 3 12.5 3 15.5V17h14v-1.5c0-3-2.1-5.3-4.8-6.2C13.3 8.6 14 7.4 14 6c0-2.2-1.8-4-4-4z" fill="#fc3c44"/>
+        </svg>
+      </div>
+      <div class="feature-title">Apple Music ready</div>
+      <div class="feature-desc">Your full Apple Music library is available instantly. No API keys, no setup — AppTune uses the native Music app via AppleScript bridge.</div>
+    </div>
+
+    <div class="feature-card reveal">
+      <div class="feature-icon icon-purple">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <rect x="3" y="3" width="6" height="6" rx="1.5" fill="#6c63ff"/>
+          <rect x="11" y="3" width="6" height="6" rx="1.5" fill="#6c63ff" opacity="0.4"/>
+          <rect x="3" y="11" width="6" height="6" rx="1.5" fill="#6c63ff" opacity="0.4"/>
+          <rect x="11" y="11" width="6" height="6" rx="1.5" fill="#6c63ff" opacity="0.4"/>
+        </svg>
+      </div>
+      <div class="feature-title">Lives in your menu bar</div>
+      <div class="feature-desc">AppTune has zero Dock presence. It runs silently as a menu bar app, launching at login via SMAppService — the modern macOS Login Items API.</div>
+    </div>
+
+    <div class="feature-card reveal">
+      <div class="feature-icon icon-gray">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 2L12.4 7.4L18 8.2L14 12.1L15 17.8L10 15.2L5 17.8L6 12.1L2 8.2L7.6 7.4L10 2Z" fill="#888"/>
+        </svg>
+      </div>
+      <div class="feature-title">Two trigger modes</div>
+      <div class="feature-desc">Trigger music on app launch, on app focus, or both. Each rule is independently configurable so you have complete control over when music plays.</div>
+    </div>
+  </div>
+</section>
+
+<section class="install-section" id="install">
+  <p class="section-label">Get started</p>
+  <h2 class="install-title">One command.<br><em>That's it.</em></h2>
+  <p class="install-subtitle">Free, open source, and built for macOS.</p>
+
+  <div class="install-terminal">
+    <button class="copy-btn" onclick="copyInstall()" style="top:14px; right:14px;">copy</button>
+    <div class="terminal-dots">
+      <div class="terminal-dot red"></div>
+      <div class="terminal-dot yellow"></div>
+      <div class="terminal-dot green"></div>
+    </div>
+    <div class="terminal-line" style="margin-bottom: 10px;">
+      <span class="terminal-prompt">$</span>
+      <span class="terminal-cmd" style="color: #e8e8e4;">brew tap HitarthTrivedi/apptune</span>
+    </div>
+    <div class="terminal-line">
+      <span class="terminal-prompt">$</span>
+      <span class="terminal-cmd" style="color: #e8e8e4;">brew install --cask apptune</span>
+    </div>
+  </div>
+  <p class="install-note">Requires <a href="https://brew.sh" target="_blank">Homebrew</a> · macOS Ventura 13.0 or later · Apple Silicon + Intel</p>
+</section>
+
+<footer>
+  <div class="footer-left">
+    <div class="footer-logo" style="background: none; width: 24px; height: 24px;">
+  <img src="apptune_logo.png" style="width: 24px; height: 24px; border-radius: 5px;" alt="AppTune">
+</div>
+    <span class="footer-name">AppTune · by Hitarth Trivedi</span>
+  </div>
+  <ul class="footer-links">
+    <li><a href="https://github.com/HitarthTrivedi/AppTune" target="_blank">GitHub</a></li>
+    <li><a href="https://github.com/HitarthTrivedi/AppTune/releases" target="_blank">Releases</a></li>
+    <li><a href="https://github.com/HitarthTrivedi/AppTune/issues" target="_blank">Issues</a></li>
+  </ul>
+  <span class="footer-right">MIT License</span>
+</footer>
+
+<script>
+  function copyInstall() {
+    const text = 'brew tap HitarthTrivedi/apptune\nbrew install --cask apptune';
+    navigator.clipboard.writeText(text).then(() => {
+      document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.textContent = 'copied!';
+        setTimeout(() => btn.textContent = 'copy', 2000);
+      });
+    });
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
