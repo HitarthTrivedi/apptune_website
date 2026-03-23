@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AppTune — Music automation for macOS</title>
-<link rel="icon" type="image/png" href="apptune_logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
@@ -714,9 +713,9 @@
 
 <nav>
   <a href="#" class="nav-logo">
-    <div class="nav-logo-icon" style="background: none; width: 32px; height: 32px;">
-  <img src="apptune_logo.png" style="width: 32px; height: 32px; border-radius: 7px;" alt="AppTune">
-</div>
+    <div class="nav-logo-icon" style="background:none; width:32px; height:32px;">
+      <img src="apptune_logo.png" style="width:32px; height:32px; border-radius:7px;" alt="AppTune">
+    </div>
     <span class="nav-logo-text">AppTune</span>
   </a>
   <ul class="nav-links">
@@ -936,9 +935,9 @@
 
 <footer>
   <div class="footer-left">
-    <div class="footer-logo" style="background: none; width: 24px; height: 24px;">
-  <img src="apptune_logo.png" style="width: 24px; height: 24px; border-radius: 5px;" alt="AppTune">
-</div>
+    <div class="footer-logo" style="background:none; width:24px; height:24px;">
+      <img src="apptune_logo.png" style="width:24px; height:24px; border-radius:5px;" alt="AppTune">
+    </div>
     <span class="footer-name">AppTune · by Hitarth Trivedi</span>
   </div>
   <ul class="footer-links">
@@ -972,3 +971,40 @@
 </script>
 </body>
 </html>
+<<<<<<< HEAD
+=======
+<!-- Mobile styles injected -->
+<style>
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-links { display: none; }
+  .hero { padding: 100px 24px 64px; }
+  .hero-title { font-size: 42px; }
+  .hero-subtitle { font-size: 16px; }
+  .terminal-block { min-width: unset; width: 100%; }
+  .section { padding: 80px 24px; }
+  .section-title { font-size: 36px; margin-bottom: 40px; }
+  .steps { grid-template-columns: 1fr; }
+  .step { padding: 28px 24px; }
+  .step-number { font-size: 48px; margin-bottom: 16px; }
+  .features-grid { grid-template-columns: 1fr; }
+  .feature-card.large { grid-column: span 1; grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: 1fr; margin-top: 48px; }
+  .stat-item { padding: 28px; }
+  .stat-number { font-size: 40px; }
+  .install-section { padding: 80px 24px; }
+  .install-title { font-size: 36px; }
+  .install-terminal { min-width: unset; width: 100%; }
+  footer { flex-direction: column; gap: 24px; padding: 32px 24px; text-align: center; }
+  .footer-links { flex-wrap: wrap; justify-content: center; }
+  .terminal-showcase { padding: 20px; }
+  .feature-card { padding: 24px; }
+}
+@media (max-width: 480px) {
+  .hero-title { font-size: 34px; }
+  .terminal-block { padding: 16px 18px; }
+  .terminal-cmd { font-size: 12px; }
+  .hero-badge { font-size: 11px; padding: 5px 12px; }
+}
+</style>
+>>>>>>> 4025d5d (Add logo to nav and footer and is now made responsive)
